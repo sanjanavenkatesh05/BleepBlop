@@ -1,0 +1,25 @@
+package com.BleepBlop.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ChatMessage {
+    private MessageType type;
+    private String content;
+    private String sender;
+    private String recipient; // For private messages
+    private String timestamp;
+
+    public enum MessageType {
+        CHAT,
+        JOIN,
+        LEAVE,
+        TYPING
+    }
+}

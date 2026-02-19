@@ -1,0 +1,26 @@
+# Maven / Java
+target/
+*.class
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/
+
+# Node / Frontend
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.DS_Store
+dist/
+build/
+coverage/
+
+# OS
+Thumbs.db
