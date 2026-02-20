@@ -42,7 +42,7 @@ export const ChatProvider = ({ children }) => {
 
     const fetchConnectedUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:8081/api/auth/users');
+            const response = await axios.get(import.meta.env.VITE_API_URL + '/api/auth/users');
             setConnectedUsers(response.data);
         } catch (e) {
             console.error("Failed to fetch users", e);

@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 let stompClient = null;
 
 const connect = (user, onMessageReceived, onUserListUpdate) => {
-    const socket = new SockJS('http://localhost:8081/ws');
+    const socket = new SockJS(import.meta.env.VITE_API_URL + '/ws');
     stompClient = Stomp.over(socket);
     stompClient.debug = () => { }; // Disable debug logs
 
