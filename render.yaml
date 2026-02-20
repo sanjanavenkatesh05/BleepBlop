@@ -37,7 +37,7 @@ services:
           name: bleepbloop-backend
           type: web
           property: host
-          value: https://${host}
+        value: https://bleepbloop-backend-xxxx.onrender.com # Render injects the actual URL later
     routes:
       - type: rewrite
         source: /*
