@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: bleepbloop-backend
+    env: docker
+    plan: free
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: bleepbloop-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: bleepbloop-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: bleepbloop-db
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: bleepbloop-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: bleepbloop-db
+          property: password
+
+  - type: web
+    name: bleepbloop-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    rootDir: frontend
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: bleepbloop-backend
+          type: web
+          property: host
+          value: https://${host}
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: bleepbloop-db
+    databaseName: bleepbloop
+    user: postgres
+    plan: free
