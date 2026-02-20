@@ -1,71 +1,69 @@
 package com.BleepBlop.service;
 
 import com.BleepBlop.model.User;
+import com.BleepBlop.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    // In-memory ConcurrentHashMap to store users by username
-    private final Map<String, User> users = new ConcurrentHashMap<>();
-
-    // Additional map to enforce unique emails
-    private final Map<String, String> emailToUsernameMap = new ConcurrentHashMap<>();
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public User registerUser(User user) throws Exception {
-        if (users.containsKey(user.getUsername())) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new Exception("Username already exists");
         }
-        if (emailToUsernameMap.containsKey(user.getEmail())) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new Exception("Email already registered");
         }
-        
-        user.setStatus(User.Status.ONLINE); // Default to online on registration? Or maybe on login.
-        // For simplicity, we register and they can then login.
+
         user.setStatus(User.Status.OFFLINE);
-        
-        users.put(user.getUsername(), user);
-        emailToUsernameMap.put(user.getEmail(), user.getUsername());
-        return user;
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        return userRepository.save(user);
     }
 
-    public User loginUser(String identifier, String password) throws Exception {
-        User user = null;
-        
-        // Check if identifier is email
-        if (emailToUsernameMap.containsKey(identifier)) {
-            String username = emailToUsernameMap.get(identifier);
-            user = users.get(username);
-        } else if (users.containsKey(identifier)) {
-            user = users.get(identifier);
+    public User loginUser(String identifier, String password, String publicKey) throws Exception {
+        Optional<User> userOptional = userRepository.findByEmail(identifier);
+        if (userOptional.isEmpty()) {
+            userOptional = userRepository.findByUsername(identifier);
         }
 
-        if (user != null && user.getPassword().equals(password)) {
-            user.setStatus(User.Status.ONLINE);
-            return user;
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                user.setStatus(User.Status.ONLINE);
+                if (publicKey != null) {
+                    user.setPublicKey(publicKey);
+                }
+                return userRepository.save(user);
+            }
         }
-        
+
         throw new Exception("Invalid credentials");
     }
-    
+
     public void logoutUser(String username) {
-        User user = users.get(username);
-        if (user != null) {
+        userRepository.findByUsername(username).ifPresent(user -> {
             user.setStatus(User.Status.OFFLINE);
-        }
+            userRepository.save(user);
+        });
     }
 
     public List<User> findConnectedUsers() {
-        return new ArrayList<>(users.values());
+        return userRepository.findAll().stream()
+                .filter(user -> user.getStatus() == User.Status.ONLINE)
+                .toList();
     }
-    
+
     public User findByUsername(String username) {
-        return users.get(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 }

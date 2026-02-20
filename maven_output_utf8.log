@@ -1,0 +1,8 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.BleepBlop:BleepBloop >----------------------
+[INFO] Building BleepBloop 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.2:run (default-cli) > test-compile @ BleepBloop >>>

@@ -13,7 +13,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Allow frontend to access
 public class AuthController {
-    
+
     private final UserService userService;
 
     @PostMapping("/signup")
@@ -30,9 +30,9 @@ public class AuthController {
         try {
             String identifier = credentials.get("identifier"); // email or username
             String password = credentials.get("password");
-            User user = userService.loginUser(identifier, password);
-             user.setPublicKey(credentials.get("publicKey")); // Store temporary public key for this session
-             System.out.println("User " + user.getUsername() + " logged in with PK: " + user.getPublicKey());
+            String publicKey = credentials.get("publicKey");
+            User user = userService.loginUser(identifier, password, publicKey);
+            System.out.println("User " + user.getUsername() + " logged in with PK: " + user.getPublicKey());
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
