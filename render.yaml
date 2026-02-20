@@ -47,5 +47,4 @@ services:
 databases:
   - name: bleepbloop-db
     databaseName: bleepbloop
-    user: postgres
     plan: free
