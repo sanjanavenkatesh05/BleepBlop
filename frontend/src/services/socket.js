@@ -4,18 +4,28 @@ import SockJS from 'sockjs-client';
 let stompClient = null;
 
 const connect = (user, onMessageReceived, onUserListUpdate) => {
-    // SockJS will automatically handle HTTP vs HTTPS and switch to ws:// or wss://.
-    // However, on Render, we MUST ensure the API URL passed to SockJS uses https://
-    // if the page is loaded over https://
-    const isSecure = window.location.protocol === 'https:';
+    // SockJS needs an http/https URL, not ws/wss. It negotiates the upgrade internally.
     let rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
-    if (isSecure && rawApiUrl.startsWith('http://')) {
-        rawApiUrl = rawApiUrl.replace('http://', 'https://');
+    try {
+        const parsedUrl = new URL(rawApiUrl);
+        if (window.location.protocol === 'https:' && parsedUrl.protocol === 'http:') {
+            parsedUrl.protocol = 'https:';
+            rawApiUrl = parsedUrl.toString();
+            // remove trailing slash if present
+            if (rawApiUrl.endsWith('/')) rawApiUrl = rawApiUrl.slice(0, -1);
+        }
+    } catch (e) {
+        console.error("Failed to parse VITE_API_URL", e);
     }
 
     const socketUrl = rawApiUrl + '/ws';
-    const socket = new SockJS(socketUrl);
+
+    // Sometimes Render's SSL termination causes SockJS to get confused about the protocol.
+    // Forcing specific transports and bypassing the default iframe can help.
+    const socket = new SockJS(socketUrl, null, {
+        transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+    });
     stompClient = Stomp.over(socket);
     stompClient.debug = () => { }; // Disable debug logs
 
